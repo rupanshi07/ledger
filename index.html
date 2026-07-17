@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ledger — plan assignments &amp; projects</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f7f5f2;
+    --paper-line:#e3ded4;
+    --ink:#1b3a4b;
+    --ink-soft:#4a6270;
+    --red:#c1392b;
+    --red-soft:#e8b4ac;
+    --green:#4c7a5d;
+    --green-soft:#cfe0d4;
+    --amber:#b8863b;
+    --card:#ffffff;
+    --shadow: 0 1px 2px rgba(27,58,75,0.06), 0 4px 14px rgba(27,58,75,0.06);
+    --radius: 10px;
+    --display: 'Fraunces', serif;
+    --body: 'IBM Plex Sans', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: var(--body);
+    color: var(--ink);
+    background:
+      linear-gradient(var(--paper-line) 1px, transparent 1px) 0 0/100% 32px,
+      var(--paper);
+    min-height:100vh;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:28px 20px 80px;}
+
+  /* Header */
+  header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;padding-bottom:14px;border-bottom:2px solid var(--ink);}
+  header h1{font-family:var(--display);font-weight:700;font-size:34px;margin:0;letter-spacing:-0.01em;}
+  header .tag{font-family:var(--mono);font-size:12px;color:var(--ink-soft);letter-spacing:.04em;text-transform:uppercase;margin-top:4px;}
+  #whoami{font-family:var(--mono);font-size:13px;color:var(--ink-soft);display:flex;gap:10px;align-items:center;}
+  #whoami button{font-family:var(--body);font-size:12px;background:none;border:1px solid var(--ink-soft);color:var(--ink-soft);border-radius:6px;padding:4px 9px;cursor:pointer;}
+  #whoami button:hover{border-color:var(--ink);color:var(--ink);}
+
+  /* Sign-in */
+  #signin{max-width:420px;margin:80px auto;text-align:center;}
+  #signin h1{font-family:var(--display);font-size:40px;margin-bottom:2px;}
+  #signin p.sub{color:var(--ink-soft);margin-top:0;margin-bottom:28px;}
+  #signin input{width:100%;font-size:16px;padding:12px 14px;border:1.5px solid var(--ink);border-radius:8px;font-family:var(--body);background:var(--card);}
+  #signin button{margin-top:12px;width:100%;padding:12px;font-size:15px;font-weight:600;background:var(--ink);color:var(--paper);border:none;border-radius:8px;cursor:pointer;font-family:var(--body);}
+  #signin button:hover{background:var(--ink-soft);}
+  #profile-list{margin-top:20px;text-align:left;}
+  #profile-list .profile-btn{display:block;width:100%;text-align:left;padding:10px 12px;margin-bottom:6px;background:var(--card);border:1px solid var(--paper-line);border-radius:8px;cursor:pointer;font-family:var(--mono);font-size:14px;color:var(--ink);}
+  #profile-list .profile-btn:hover{border-color:var(--ink);}
+  #signin-note{font-size:12px;color:var(--ink-soft);margin-top:22px;line-height:1.5;}
+
+  #app{display:none;}
+
+  /* Add bar */
+  .addbar{display:flex;gap:10px;margin-bottom:24px;}
+  .addbar button{flex:1;padding:14px;border-radius:var(--radius);border:1.5px dashed var(--ink-soft);background:transparent;color:var(--ink);font-family:var(--body);font-weight:600;font-size:14px;cursor:pointer;}
+  .addbar button:hover{border-style:solid;background:var(--card);}
+
+  /* Section labels */
+  .section-label{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin:26px 0 10px;}
+
+  /* Cards */
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:12px;}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .card-title{font-family:var(--display);font-size:19px;font-weight:600;margin:0;}
+  .card-subject{font-family:var(--mono);font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+  .badge{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:20px;white-space:nowrap;}
+  .badge.due{background:var(--red-soft);color:var(--red);}
+  .badge.done{background:var(--green-soft);color:var(--green);}
+  .badge.today{background:#fbe6c2;color:var(--amber);}
+  .row{display:flex;align-items:center;gap:10px;margin-top:10px;}
+  .check{width:20px;height:20px;border-radius:50%;border:2px solid var(--ink-soft);cursor:pointer;flex:none;position:relative;}
+  .check.checked{background:var(--green);border-color:var(--green);}
+  .check.checked::after{content:'✓';color:#fff;font-size:12px;position:absolute;top:1px;left:3.5px;}
+  .assign-date{font-family:var(--mono);font-size:12px;color:var(--ink-soft);}
+  .assign-title-line{flex:1;font-size:14px;}
+  .assign-title-line.done{text-decoration:line-through;color:var(--ink-soft);}
+  .del{background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:16px;padding:0 4px;}
+  .del:hover{color:var(--red);}
+
+  /* project progress */
+  .progress-outer{height:8px;background:var(--paper-line);border-radius:5px;overflow:hidden;margin-top:10px;}
+  .progress-inner{height:100%;background:var(--green);border-radius:5px;transition:width .3s;}
+  .pct{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-top:4px;}
+
+  /* step ruler */
+  .steps{margin-top:14px;border-top:1px dashed var(--paper-line);padding-top:10px;}
+  .step{display:flex;align-items:center;gap:10px;padding:6px 0;}
+  .step-title{flex:1;font-size:14px;}
+  .step-title.done{text-decoration:line-through;color:var(--ink-soft);}
+  .step-dates{font-family:var(--mono);font-size:11px;text-align:right;line-height:1.4;}
+  .step-dates .adj{color:var(--ink);}
+  .step-dates .orig{color:var(--ink-soft);font-size:10px;}
+  .compressed-tag{font-family:var(--mono);font-size:10px;background:#fbe6c2;color:var(--amber);border-radius:10px;padding:1px 7px;margin-left:6px;white-space:nowrap;}
+
+  /* modal */
+  .overlay{display:none;position:fixed;inset:0;background:rgba(27,58,75,.35);align-items:center;justify-content:center;z-index:50;padding:20px;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--card);border-radius:14px;padding:24px;max-width:460px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow);}
+  .modal h2{font-family:var(--display);margin-top:0;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin-bottom:5px;}
+  .field input{width:100%;padding:9px 11px;border:1.5px solid var(--paper-line);border-radius:7px;font-family:var(--body);font-size:14px;}
+  .field input:focus{outline:none;border-color:var(--ink);}
+  .step-row{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
+  .step-row input[type=text]{flex:2;}
+  .step-row input[type=date]{flex:1;}
+  .step-row button{background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;}
+  .add-step-btn{font-family:var(--body);font-size:13px;background:none;border:1px dashed var(--ink-soft);border-radius:7px;padding:7px 10px;cursor:pointer;width:100%;color:var(--ink-soft);}
+  .modal-actions{display:flex;gap:10px;margin-top:18px;}
+  .modal-actions button{flex:1;padding:11px;border-radius:8px;border:none;font-family:var(--body);font-weight:600;font-size:14px;cursor:pointer;}
+  .btn-primary{background:var(--ink);color:var(--paper);}
+  .btn-secondary{background:var(--paper);color:var(--ink);border:1.5px solid var(--paper-line) !important;}
+  .empty{color:var(--ink-soft);font-size:14px;padding:14px 0;font-style:italic;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:20px;font-family:var(--mono);font-size:12px;box-shadow:var(--shadow);opacity:0;transition:opacity .25s;pointer-events:none;z-index:100;}
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div id="signin">
+  <h1>Ledger</h1>
+  <p class="sub">assignments, projects, and a schedule that tightens itself</p>
+  <input id="signin-name" type="text" placeholder="Type your name to sign in">
+  <button id="signin-btn">Continue</button>
+  <div id="profile-list"></div>
+  <div id="signin-note">This is a prototype: "accounts" are just named profiles stored in this browser (localStorage) — no password, no server, and data won't follow you to another device or browser. Good enough to try the idea, not for real secrets.</div>
+</div>
+
+<div id="app">
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Ledger</h1>
+        <div class="tag">assignments &amp; projects</div>
+      </div>
+      <div id="whoami"></div>
+    </header>
+
+    <div class="addbar">
+      <button id="add-assignment-btn">+ Assignment</button>
+      <button id="add-project-btn">+ Project</button>
+    </div>
+
+    <div class="section-label">Assignments</div>
+    <div id="assignments-list"></div>
+
+    <div class="section-label">Projects</div>
+    <div id="projects-list"></div>
+  </div>
+</div>
+
+<!-- Assignment modal -->
+<div class="overlay" id="assignment-overlay">
+  <div class="modal">
+    <h2>New assignment</h2>
+    <div class="field"><label>Title</label><input id="a-title" type="text" placeholder="e.g. Problem set 4"></div>
+    <div class="field"><label>Subject</label><input id="a-subject" type="text" placeholder="e.g. Linear Algebra"></div>
+    <div class="field"><label>Submission date</label><input id="a-date" type="date"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('assignment-overlay')">Cancel</button>
+      <button class="btn-primary" onclick="saveAssignment()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Project modal -->
+<div class="overlay" id="project-overlay">
+  <div class="modal">
+    <h2>New project</h2>
+    <div class="field"><label>Title</label><input id="p-title" type="text" placeholder="e.g. Capstone report"></div>
+    <div class="field"><label>Subject</label><input id="p-subject" type="text" placeholder="e.g. Design Studio"></div>
+    <div class="field"><label>Steps, in order</label></div>
+    <div id="p-steps"></div>
+    <button class="add-step-btn" onclick="addStepRow()">+ Add step</button>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('project-overlay')">Cancel</button>
+      <button class="btn-primary" onclick="saveProject()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- storage / profile ---------- */
+let currentUser = null;
+let tasks = [];
+
+function keyFor(user){ return `ledger:${user}:tasks`; }
+const PROFILES_KEY = 'ledger:profiles';
+
+async function listProfiles(){
+  try{
+    const raw = localStorage.getItem(PROFILES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+
+async function rememberProfile(user){
+  const profiles = await listProfiles();
+  if(!profiles.includes(user)){
+    profiles.push(user);
+    localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+  }
+}
+
+async function loadTasks(user){
+  try{
+    const raw = localStorage.getItem(keyFor(user));
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+
+async function saveTasks(){
+  try{
+    localStorage.setItem(keyFor(currentUser), JSON.stringify(tasks));
+  }catch(e){ console.error('save failed', e); toast('Could not save — try again'); }
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+async function initSignIn(){
+  const profiles = await listProfiles();
+  const list = document.getElementById('profile-list');
+  if(profiles.length){
+    list.innerHTML = '<label style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);text-transform:uppercase;">Or continue as</label>';
+    profiles.forEach(p=>{
+      const b = document.createElement('button');
+      b.className='profile-btn';
+      b.textContent = p;
+      b.onclick = ()=>signIn(p);
+      list.appendChild(b);
+    });
+  }
+}
+
+document.getElementById('signin-btn').onclick = ()=>{
+  const name = document.getElementById('signin-name').value.trim();
+  if(!name){ toast('Enter a name first'); return; }
+  signIn(name);
+};
+document.getElementById('signin-name').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('signin-btn').click(); });
+
+async function signIn(name){
+  currentUser = name;
+  await rememberProfile(name);
+  tasks = await loadTasks(name);
+  document.getElementById('signin').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('whoami').innerHTML = `${name} <button id="signout-btn">Sign out</button>`;
+  document.getElementById('signout-btn').onclick = signOut;
+  render();
+}
+
+function signOut(){
+  currentUser = null; tasks = [];
+  document.getElementById('app').style.display='none';
+  document.getElementById('signin').style.display='block';
+  document.getElementById('signin-name').value='';
+  initSignIn();
+}
+
+initSignIn();
+
+/* ---------- helpers ---------- */
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function daysBetween(a,b){ return Math.round((new Date(b) - new Date(a)) / 86400000); }
+function fmtDate(d){
+  if(!d) return '—';
+  const dt = new Date(d+'T00:00:00');
+  return dt.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+}
+
+/* ---------- modals ---------- */
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open');
+  if(id==='assignment-overlay'){ document.getElementById('a-title').value=''; document.getElementById('a-subject').value=''; document.getElementById('a-date').value=''; }
+  if(id==='project-overlay'){ document.getElementById('p-title').value=''; document.getElementById('p-subject').value=''; document.getElementById('p-steps').innerHTML=''; }
+}
+document.getElementById('add-assignment-btn').onclick=()=>openModal('assignment-overlay');
+document.getElementById('add-project-btn').onclick=()=>{ document.getElementById('p-steps').innerHTML=''; addStepRow(); addStepRow(); openModal('project-overlay'); };
+
+function addStepRow(){
+  const wrap = document.getElementById('p-steps');
+  const row = document.createElement('div');
+  row.className='step-row';
+  row.innerHTML = `<input type="text" placeholder="Step name" class="s-title">
+                    <input type="date" class="s-date">
+                    <button onclick="this.parentElement.remove()">✕</button>`;
+  wrap.appendChild(row);
+}
+
+async function saveAssignment(){
+  const title = document.getElementById('a-title').value.trim();
+  const subject = document.getElementById('a-subject').value.trim();
+  const date = document.getElementById('a-date').value;
+  if(!title || !date){ toast('Add a title and a submission date'); return; }
+  tasks.push({ id:uid(), type:'assignment', title, subject, submissionDate:date, completed:false, completedAt:null });
+  await saveTasks();
+  closeModal('assignment-overlay');
+  render();
+}
+
+async function saveProject(){
+  const title = document.getElementById('p-title').value.trim();
+  const subject = document.getElementById('p-subject').value.trim();
+  const rows = [...document.querySelectorAll('#p-steps .step-row')];
+  const steps = rows.map(r=>({
+    title: r.querySelector('.s-title').value.trim(),
+    date: r.querySelector('.s-date').value
+  })).filter(s=>s.title && s.date);
+  if(!title || steps.length===0){ toast('Add a title and at least one dated step'); return; }
+  const stepObjs = steps.map(s=>({
+    id: uid(), title: s.title,
+    originalDeadline: s.date, adjustedDeadline: s.date,
+    completed:false, completedAt:null
+  }));
+  tasks.push({ id:uid(), type:'project', title, subject, steps: stepObjs });
+  await saveTasks();
+  closeModal('project-overlay');
+  render();
+}
+
+/* ---------- completion + compression logic ---------- */
+async function toggleAssignment(id){
+  const t = tasks.find(x=>x.id===id);
+  t.completed = !t.completed;
+  t.completedAt = t.completed ? todayStr() : null;
+  await saveTasks();
+  render();
+}
+
+async function toggleStep(projectId, stepId){
+  const proj = tasks.find(x=>x.id===projectId);
+  const step = proj.steps.find(s=>s.id===stepId);
+  const wasCompleted = step.completed;
+  step.completed = !step.completed;
+  step.completedAt = step.completed ? todayStr() : null;
+
+  if(step.completed && !wasCompleted){
+    compressFollowingStep(proj, step);
+  }
+  await saveTasks();
+  render();
+}
+
+// Core "smart deadline" rule:
+// If a step finishes before its own deadline, look at the gap it opened up
+// (today -> next step's current deadline). If no other pending deadline
+// (another assignment's submission date, or another step anywhere) falls
+// inside that gap, pull the next step's active deadline forward by the
+// number of days saved. The date the person originally set stays on record
+// as a buffer — it's never deleted, just no longer the active target.
+function compressFollowingStep(proj, finishedStep){
+  const today = todayStr();
+  const earlyDays = daysBetween(today, finishedStep.adjustedDeadline);
+  if(earlyDays <= 0) return; // finished on/after deadline, nothing to compress
+
+  const idx = proj.steps.findIndex(s=>s.id===finishedStep.id);
+  const nextStep = proj.steps.slice(idx+1).find(s=>!s.completed);
+  if(!nextStep) return;
+
+  const windowStart = today;
+  const windowEnd = nextStep.adjustedDeadline;
+
+  // gather every other pending deadline across all tasks
+  const otherDeadlines = [];
+  tasks.forEach(t=>{
+    if(t.type==='assignment' && !t.completed) otherDeadlines.push(t.submissionDate);
+    if(t.type==='project'){
+      t.steps.forEach(s=>{
+        if(!s.completed && !(t.id===proj.id && s.id===nextStep.id)) otherDeadlines.push(s.adjustedDeadline);
+      });
+    }
+  });
+
+  const conflict = otherDeadlines.some(d => d >= windowStart && d < windowEnd);
+  if(conflict) return; // something else is already landing in that window — leave it alone
+
+  const newDate = new Date(nextStep.adjustedDeadline);
+  newDate.setDate(newDate.getDate() - earlyDays);
+  const floor = new Date(today);
+  const candidate = newDate < floor ? floor : newDate;
+  const candidateStr = candidate.toISOString().slice(0,10);
+
+  if(candidateStr < nextStep.adjustedDeadline){
+    nextStep.adjustedDeadline = candidateStr;
+    nextStep.compressed = true;
+    toast(`Pulled "${nextStep.title}" forward to ${fmtDate(candidateStr)} — nothing else was in the way`);
+  }
+}
+
+async function deleteTask(id){
+  tasks = tasks.filter(t=>t.id!==id);
+  await saveTasks();
+  render();
+}
+
+/* ---------- render ---------- */
+function statusBadge(dateStr, completed){
+  if(completed) return `<span class="badge done">done</span>`;
+  const d = daysBetween(todayStr(), dateStr);
+  if(d < 0) return `<span class="badge due">overdue</span>`;
+  if(d === 0) return `<span class="badge today">today</span>`;
+  return `<span class="badge due">${fmtDate(dateStr)}</span>`;
+}
+
+function render(){
+  const aList = document.getElementById('assignments-list');
+  const pList = document.getElementById('projects-list');
+  const assignments = tasks.filter(t=>t.type==='assignment');
+  const projects = tasks.filter(t=>t.type==='project');
+
+  aList.innerHTML = assignments.length ? '' : '<div class="empty">No assignments yet.</div>';
+  assignments
+    .slice()
+    .sort((a,b)=> a.completed - b.completed || a.submissionDate.localeCompare(b.submissionDate))
+    .forEach(t=>{
+      const el = document.createElement('div');
+      el.className='card';
+      el.innerHTML = `
+        <div class="card-top">
+          <div>
+            <p class="card-title">${escapeHtml(t.title)}</p>
+            ${t.subject ? `<div class="card-subject">${escapeHtml(t.subject)}</div>` : ''}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            ${statusBadge(t.submissionDate, t.completed)}
+            <button class="del" title="Delete" onclick="deleteTask('${t.id}')">✕</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="check ${t.completed?'checked':''}" onclick="toggleAssignment('${t.id}')"></div>
+          <div class="assign-title-line ${t.completed?'done':''}">Due ${fmtDate(t.submissionDate)}</div>
+        </div>`;
+      aList.appendChild(el);
+    });
+
+  pList.innerHTML = projects.length ? '' : '<div class="empty">No projects yet.</div>';
+  projects.forEach(p=>{
+    const total = p.steps.length;
+    const done = p.steps.filter(s=>s.completed).length;
+    const pct = total ? Math.round(done/total*100) : 0;
+    const el = document.createElement('div');
+    el.className='card';
+    el.innerHTML = `
+      <div class="card-top">
+        <div>
+          <p class="card-title">${escapeHtml(p.title)}</p>
+          ${p.subject ? `<div class="card-subject">${escapeHtml(p.subject)}</div>` : ''}
+        </div>
+        <button class="del" title="Delete" onclick="deleteTask('${p.id}')">✕</button>
+      </div>
+      <div class="progress-outer"><div class="progress-inner" style="width:${pct}%"></div></div>
+      <div class="pct">${pct}% complete — ${done}/${total} steps</div>
+      <div class="steps">
+        ${p.steps.map(s=>`
+          <div class="step">
+            <div class="check ${s.completed?'checked':''}" onclick="toggleStep('${p.id}','${s.id}')"></div>
+            <div class="step-title ${s.completed?'done':''}">${escapeHtml(s.title)}</div>
+            <div class="step-dates">
+              <div class="adj">${s.completed? 'done '+fmtDate(s.completedAt) : fmtDate(s.adjustedDeadline)}
+                ${(!s.completed && s.compressed) ? '<span class="compressed-tag">moved up</span>' : ''}
+              </div>
+              ${(!s.completed && s.adjustedDeadline !== s.originalDeadline) ? `<div class="orig">buffer: ${fmtDate(s.originalDeadline)}</div>` : ''}
+            </div>
+          </div>`).join('')}
+      </div>`;
+    pList.appendChild(el);
+  });
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>
