@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Ledger
 
 A small single-file web app for tracking **assignments** and **projects**, with one twist: project steps can automatically move their deadline earlier if you finish a step ahead of schedule and nothing else is competing for that time.
@@ -17,7 +16,7 @@ A small single-file web app for tracking **assignments** and **projects**, with 
 It's a single static HTML file with no build step and no server.
 
 ```bash
-git clone https://github.com/<your-username>/ledger.git
+git clone https://github.com/rupanshi07/ledger.git
 cd ledger
 # just open it
 open index.html   # macOS
@@ -29,10 +28,10 @@ Or double-click `index.html` in a file browser.
 
 ## Hosting it for free (GitHub Pages)
 
-1. Push this repo to GitHub (see below).
+1. Push this repo to GitHub. (Already done!)
 2. Go to **Settings → Pages** on the repo.
 3. Under "Build and deployment," set Source to **Deploy from a branch**, branch `main`, folder `/ (root)`.
-4. Save. Your app will be live at `https://<your-username>.github.io/<repo-name>/` within a minute or two.
+4. Save. Your app will be live at `https://rupanshi07.github.io/ledger/` within a minute or two.
 
 ## About accounts
 
@@ -45,6 +44,3 @@ Plain HTML/CSS/JavaScript. No framework, no dependencies, no build tooling. Data
 ## License
 
 MIT — see [LICENSE](LICENSE). Contributions welcome.
-=======
-# ledger
->>>>>>> 27708076d560d55dccaa035e8cee91c6afc28bd5
