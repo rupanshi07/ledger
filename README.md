@@ -2,7 +2,7 @@
 
 A small single-file web app for tracking **assignments** and **projects**, with one twist: project steps can automatically move their deadline earlier if you finish a step ahead of schedule and nothing else is competing for that time.
 
-**[Live demo →](#)** *(replace with your GitHub Pages link once enabled — see below)*
+**[Live demo →](https://rupanshi07.github.io/ledger/)** 
 
 ## What it does
 
