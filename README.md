@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Ledger
 
 A small single-file web app for tracking **assignments** and **projects**, with one twist: project steps can automatically move their deadline earlier if you finish a step ahead of schedule and nothing else is competing for that time.
@@ -44,3 +45,6 @@ Plain HTML/CSS/JavaScript. No framework, no dependencies, no build tooling. Data
 ## License
 
 MIT — see [LICENSE](LICENSE). Contributions welcome.
+=======
+# ledger
+>>>>>>> 27708076d560d55dccaa035e8cee91c6afc28bd5
